@@ -9,7 +9,7 @@
 import SpriteKit
 
 enum tiletype {
-    case red, blue, neutral, poison
+    case red, blue, neutral, poison, redselected, blueselected, neutralselected, poisonselected
 }
 
 class Button : SKShapeNode{
@@ -17,6 +17,12 @@ class Button : SKShapeNode{
     var number:Int = 0
     var color:SKColor = SKColor.blackColor()
     var colortype:tiletype = .neutral
+    var team:tiletype = .neutral
+    var selected: Bool = false
+    
+    func updateColor(){
+        
+    }
     
     func setTeam(team: String) {
         
@@ -108,7 +114,6 @@ class CodeNamesGameScene: SKScene {
                 button.position = CGPointMake(buttonSize.width * CGFloat(x), buttonSize.height * CGFloat(y))
                 button.name = samplewords[buttonNumber]
                 button.colortype = boardValue[buttonNumber]
-                button.fillColor = teamView ? colorForTile(buttonNumber) : neutralcolor
                 button.zPosition = 1
                 button.name = "word tile"
                 board.addChild(button)
@@ -125,13 +130,48 @@ class CodeNamesGameScene: SKScene {
                 buttonNumber++
             }
         }
+        
+        updateTileColors()
+    }
+    
+    func updateTileColors() {
+        
+        for t in board.children {
+            let tile = t as! Button
+            tile.fillColor = updateColorFor(tile)
+        }
+    }
+    
+    func updateColorFor(tile: Button) -> SKColor {
+        if(teamView || tile.selected) {
+            switch tile.colortype {
+            case .red:
+                return redcolor
+            case .blue:
+                return bluecolor
+            case .poison:
+                return poisoncolor
+            case .redselected:
+                return SKColor.redColor()
+            case .blueselected:
+                return SKColor.blueColor()
+            case .poisonselected:
+                return SKColor.blackColor()
+            case .neutralselected:
+                return SKColor.darkGrayColor()
+            default:
+                return neutralcolor
+            }
+        }else{
+            return neutralcolor
+        }
     }
     
     func enableTeamView() {
         if(revealpressed){
             teamView = true
             teamToggle.texture = SKTexture(imageNamed: "eyeopen.png")
-            constructScene()
+            updateTileColors()
         }
         revealpressed = false
     }
@@ -139,7 +179,7 @@ class CodeNamesGameScene: SKScene {
     func disableTeamView() {
         teamView = false
         teamToggle.texture = SKTexture(imageNamed: "eyeclosed.png")
-        constructScene()
+        updateTileColors()
     }
     
     func newGame() {
@@ -172,17 +212,21 @@ class CodeNamesGameScene: SKScene {
         constructScene()
     }
     
-    func colorForTile(tile: Int) -> SKColor {
-        switch boardValue[tile] {
-            case .red:
-                return redcolor
-            case .blue:
-                return bluecolor
-            case .poison:
-                return poisoncolor
+    func tileSelect (tile: Button) {
+        switch tile.team {
+        case .blue:
+            tile.selected = true
+        case .red:
+            tile.selected = true
+        case .neutral:
+            tile.selected = true
+        case .poison:
+            tile.selected = true
         default:
-            return neutralcolor
+            return
         }
+        
+        updateTileColors()
     }
     
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
@@ -218,6 +262,7 @@ class CodeNamesGameScene: SKScene {
                     newGame()
                 case "word tile":
                     print(node.name)
+                    tileSelect(node as! Button)
             default:
                 continue
             }
