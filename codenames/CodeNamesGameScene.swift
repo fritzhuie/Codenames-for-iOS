@@ -36,6 +36,10 @@ class CodeNamesGameScene: SKScene {
     let teamToggle = SKSpriteNode(imageNamed: "eyeclosed.png")
     var teamView:Bool = false
     
+    var revealpressed:Bool = false
+    
+    var fade = SKShapeNode()
+    
     override func didMoveToView(view: SKView) {
         topBarHeight = self.frame.height / CGFloat(5.0)
         boardHeight = self.frame.height - topBarHeight
@@ -54,6 +58,12 @@ class CodeNamesGameScene: SKScene {
         topBar.fillColor = purplecolor
         topBar.zPosition = 0
         root.addChild(topBar)
+        
+        fade = SKShapeNode(rect: self.frame)
+        fade.fillColor = SKColor.whiteColor()
+        fade.zPosition = 100
+        fade.alpha = 0.0
+        addChild(fade)
         
         //add toggle button
         teamToggle.size = CGSizeMake(topBarHeight*2, topBarHeight * 1)
@@ -100,6 +110,7 @@ class CodeNamesGameScene: SKScene {
                 button.colortype = boardValue[buttonNumber]
                 button.fillColor = teamView ? colorForTile(buttonNumber) : neutralcolor
                 button.zPosition = 1
+                button.name = "word tile"
                 board.addChild(button)
                 
                 let word = SKLabelNode(text: samplewords[buttonNumber])
@@ -117,9 +128,12 @@ class CodeNamesGameScene: SKScene {
     }
     
     func enableTeamView() {
-        teamView = true
-        teamToggle.texture = SKTexture(imageNamed: "eyeopen.png")
-        constructScene()
+        if(revealpressed){
+            teamView = true
+            teamToggle.texture = SKTexture(imageNamed: "eyeopen.png")
+            constructScene()
+        }
+        revealpressed = false
     }
     
     func disableTeamView() {
@@ -171,6 +185,10 @@ class CodeNamesGameScene: SKScene {
         }
     }
     
+    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        revealpressed = false
+    }
+    
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         let touch = touches.first! as UITouch
         let touchLocation = touch.locationInNode(root)
@@ -187,14 +205,27 @@ class CodeNamesGameScene: SKScene {
             
             switch node.name! as String {
                 case "reveal":
-                    teamView ? disableTeamView() : enableTeamView()
+                    if(teamView){
+                        disableTeamView()
+                    }else{
+                        revealpressed = true
+                        let timer = NSTimer.scheduledTimerWithTimeInterval(2.0, target: self, selector: "enableTeamView", userInfo: nil, repeats: false)
+                        fade.runAction(SKAction.sequence([SKAction.fadeAlphaTo(1.0, duration: 2.0), SKAction.fadeAlphaTo(0.0, duration: 0.2)]))
+                        fade.hidden = false
+                    }
                     return
                 case "new game":
                     newGame()
+                case "word tile":
+                    print(node.name)
             default:
                 continue
             }
         }
+    }
+    
+    func tileTapped(node: Button) {
+        
     }
     
     private let redcolor = SKColor(colorLiteralRed: 0.8, green: 0.2, blue: 0.2, alpha: 1.0)
