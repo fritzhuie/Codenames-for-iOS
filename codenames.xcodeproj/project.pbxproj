@@ -16,6 +16,7 @@
 		1F5EFEE61C77D8A9004E737A /* CodeNamesGameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5EFEE51C77D8A8004E737A /* CodeNamesGameScene.swift */; };
 		1F5EFEE91C780954004E737A /* eyeclosed.png in Resources */ = {isa = PBXBuildFile; fileRef = 1F5EFEE71C780954004E737A /* eyeclosed.png */; };
 		1F5EFEEA1C780954004E737A /* eyeopen.png in Resources */ = {isa = PBXBuildFile; fileRef = 1F5EFEE81C780954004E737A /* eyeopen.png */; };
+		1F77BC5C1C964A7D0016E5CC /* Wordlists.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F77BC5B1C964A7D0016E5CC /* Wordlists.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		1F5EFEE51C77D8A8004E737A /* CodeNamesGameScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodeNamesGameScene.swift; sourceTree = "<group>"; };
 		1F5EFEE71C780954004E737A /* eyeclosed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = eyeclosed.png; sourceTree = "<group>"; };
 		1F5EFEE81C780954004E737A /* eyeopen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = eyeopen.png; sourceTree = "<group>"; };
+		1F77BC5B1C964A7D0016E5CC /* Wordlists.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Wordlists.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +68,7 @@
 			children = (
 				1F5EFED11C754A28004E737A /* AppDelegate.swift */,
 				1F5EFEE51C77D8A8004E737A /* CodeNamesGameScene.swift */,
+				1F77BC5B1C964A7D0016E5CC /* Wordlists.swift */,
 				1F5EFED31C754A28004E737A /* ViewController.swift */,
 				1F5EFEE71C780954004E737A /* eyeclosed.png */,
 				1F5EFEE81C780954004E737A /* eyeopen.png */,
@@ -151,6 +154,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1F5EFEE61C77D8A9004E737A /* CodeNamesGameScene.swift in Sources */,
+				1F77BC5C1C964A7D0016E5CC /* Wordlists.swift in Sources */,
 				1F5EFED41C754A28004E737A /* ViewController.swift in Sources */,
 				1F5EFED21C754A28004E737A /* AppDelegate.swift in Sources */,
 			);
