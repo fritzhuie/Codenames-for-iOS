@@ -247,7 +247,7 @@ class CodeNamesGameScene: SKScene {
         }
         updateTileColors()
         
-        if (tile.colortype == .poison) {
+        if (tile.team == .poison) {
             print("poison pressed")
             gameOver(currentTurn == .red ? .blue : .red)
             return
