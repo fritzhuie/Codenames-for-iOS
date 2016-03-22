@@ -13,16 +13,20 @@ enum tiletype {
 }
 
 class Button : SKShapeNode{
-    
+
     var wordValue:String = "nil"
     var number:Int = 0
     var color:SKColor = SKColor.blackColor()
     var colortype:tiletype = .neutral
     var team:tiletype = .neutral
     var selected: Bool = false
-    
-    func updateColor(){
         
+    func setColorRed(){
+        self.fillColor = SKColor.redColor()
+    }
+    
+    func setBlueRed(){
+        self.fillColor = SKColor.blueColor()
     }
     
     func setTeam(team: String) {
@@ -45,6 +49,7 @@ class CodeNamesGameScene: SKScene {
     var currentTurn:tiletype = .red
     var fade = SKShapeNode()
     var currentwords = [String](count: 0, repeatedValue: "")
+    var touchEnabled:Bool = true
     
     var redWordsRemaining:Int = 0
     var blueWordsRemaining:Int = 0
@@ -89,7 +94,7 @@ class CodeNamesGameScene: SKScene {
         root.addChild(teamToggle)
         
         //add the board space
-        board = SKShapeNode(rect: CGRectMake(0,0,self.frame.width, self.frame.height - CGFloat(topBarHeight)))
+        board = SKShapeNode(rect: CGRectMake(0,0,self.frame.width, boardHeight))
         board.fillColor = SKColor.blackColor()
         board.zPosition = 0
         root.addChild(board)
@@ -111,7 +116,7 @@ class CodeNamesGameScene: SKScene {
         root.addChild(newGameButton)
         
         //Build buttons in the board space
-        let buttonSize = CGSizeMake(board.frame.width/5, boardHeight/5)
+        let buttonSize = CGSizeMake(board.frame.width/5.0, boardHeight/5.0)
         var buttonNumber = 0
         for y in 0...4 {
             for x in 0...4 {
@@ -131,7 +136,7 @@ class CodeNamesGameScene: SKScene {
                 word.fontColor = SKColor.blackColor()
                 word.fontSize = word.text!.characters.count > 10 ? 22 : 24
                 word.fontName = "ArialHebrew-Bold"
-                word.position = CGPointMake(button.position.x + buttonSize.width/2, button.position.y + buttonSize.height/3)
+                word.position = CGPointMake(button.position.x + buttonSize.width/2.0, button.position.y + buttonSize.height/3)
                 word.name = nil
                 word.zPosition = 2
                 words.addChild(word)
@@ -148,6 +153,15 @@ class CodeNamesGameScene: SKScene {
             let tile = t as! Button
             tile.fillColor = updateColorFor(tile)
         }
+    }
+    
+    func disableTouchFor(time: Double){
+        touchEnabled = false
+        _ = NSTimer.scheduledTimerWithTimeInterval(time, target: self, selector: "enableTouch", userInfo: nil, repeats: false)
+    }
+    
+    func enableTouch(){
+        touchEnabled = true
     }
     
     func updateColorFor(tile: Button) -> SKColor {
@@ -175,13 +189,32 @@ class CodeNamesGameScene: SKScene {
         }
     }
     
+    func animateTileSelect(tile: Button){
+        
+        var anim = [SKAction]()
+        for i in 1...5 { anim.append(SKAction.scaleXTo(sin(CGFloat(i)), duration: 0.2)) }
+        
+        if tile.respondsToSelector(tile.colortype == .red ? "setRedColor" : "setBlueColor") {
+            anim.append(SKAction.performSelector(tile.colortype == .red ? "setRedColor" : "setBlueColor", onTarget: tile))
+        }else{
+            print("selector failed")
+        }
+        
+        let animreverse = anim.reverse()
+
+        for i in animreverse {
+            anim.append(i)
+        }
+        
+        tile.runAction(SKAction.sequence(anim))
+        print("5")
+    }
+    
     func newGame() {
         
         if (remainingWordList.count < 25){
             remainingWordList = wordlist
         }
-        
-        gameIsOver = false
         
         currentwords.removeAll()
         
@@ -224,15 +257,32 @@ class CodeNamesGameScene: SKScene {
                 }
             }
         }
+        gameIsOver = false
         constructScene()
     }
     
+    //MARK:call when tile is selected
     func tileSelect (tile: Button) {
+        
         if(teamView || tile.selected){
             return
         }
         
         tile.selected = true
+        
+//        let selectionTile = SKShapeNode(rect: CGRectMake(-frame.width/10.0,-boardHeight/10.0, frame.width/5.0, boardHeight/5.0))
+//        selectionTile.fillColor = SKColor.greenColor()
+//        selectionTile.zPosition = 3
+//        selectionTile.zRotation = 12
+//        root.addChild(selectionTile)
+        
+//        let buttonMovementAction = SKAction.moveTo(CGPointMake(tile.position.x + frame.width/10.0, tile.position.y + boardHeight/10.0), duration: 0.3)
+//        let buttonRotationAction = SKAction.rotateToAngle(0.0, duration: 0.3)
+//        selectionTile.runAction(buttonMovementAction)
+//        selectionTile.runAction(buttonRotationAction)
+        
+        animateTileSelect(tile)
+        
         switch tile.colortype {
         case .red:
             tile.colortype = .redselected
@@ -245,7 +295,6 @@ class CodeNamesGameScene: SKScene {
         default:
             print("color type invalid")
         }
-        updateTileColors()
         
         if (tile.team == .poison) {
             print("poison pressed")
@@ -293,8 +342,6 @@ class CodeNamesGameScene: SKScene {
         let touchLocation = touch.locationInNode(root)
         let touchedNodes = root.nodesAtPoint(touchLocation)
         
-        //print("Touch: \(touchLocation.x), \(touchLocation.y)")
-        
         for node in touchedNodes {
             
             if(node.name == nil) {
@@ -312,7 +359,7 @@ class CodeNamesGameScene: SKScene {
                     }else if (lockViewButton == false){
                         lockViewButton = true
                         revealpressed = true
-                        let timer = NSTimer.scheduledTimerWithTimeInterval(2.0, target: self, selector: "enableTeamView", userInfo: nil, repeats: false)
+                        _ = NSTimer.scheduledTimerWithTimeInterval(2.0, target: self, selector: "enableTeamView", userInfo: nil, repeats: false)
                         teamToggle.runAction(SKAction.sequence([SKAction.fadeAlphaTo(0.0, duration: 2.0), SKAction.fadeAlphaTo(1.0, duration: 0.2)]))
                     }
                     return
