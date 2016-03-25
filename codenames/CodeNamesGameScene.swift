@@ -20,12 +20,13 @@ class Button : SKShapeNode{
     var colortype:tiletype = .neutral
     var team:tiletype = .neutral
     var selected: Bool = false
+    var hover:Bool = false
         
     func setColorRed(){
         self.fillColor = SKColor.redColor()
     }
     
-    func setBlueRed(){
+    func setColorBlue(){
         self.fillColor = SKColor.blueColor()
     }
     
@@ -43,6 +44,7 @@ class CodeNamesGameScene: SKScene {
     var boardHeight = CGFloat()
     var boardValue = [tiletype](count: 25, repeatedValue: .neutral)
     let teamToggle = SKSpriteNode(imageNamed: "eyeclosed.png")
+    var currentTurnTopBarLabel:SKLabelNode = SKLabelNode()
     var teamView:Bool = false
     var revealpressed:Bool = false
     var topBar = SKShapeNode()
@@ -50,6 +52,7 @@ class CodeNamesGameScene: SKScene {
     var fade = SKShapeNode()
     var currentwords = [String](count: 0, repeatedValue: "")
     var touchEnabled:Bool = true
+    var highlighted:Button = Button()
     
     var redWordsRemaining:Int = 0
     var blueWordsRemaining:Int = 0
@@ -77,6 +80,17 @@ class CodeNamesGameScene: SKScene {
         topBar.zPosition = 0
         topBar.fillColor = currentTurn == .red ? redTeamColor : blueTeamColor
         root.addChild(topBar)
+        
+        let turnLabel = currentTurn == .red ? "Current turn: Red" : "currentTurn: Blue"
+        
+        currentTurnTopBarLabel = SKLabelNode(text: turnLabel)
+        currentTurnTopBarLabel.position.x = frame.midX
+        currentTurnTopBarLabel.position.y = frame.maxY - topBarHeight*0.6
+        currentTurnTopBarLabel.fontSize = 36
+        currentTurnTopBarLabel.fontName = "ArialHebrew-Bold"
+        currentTurnTopBarLabel.fontColor = SKColor.whiteColor()
+        currentTurnTopBarLabel.zPosition = 1
+        root.addChild(currentTurnTopBarLabel)
         
         fade = SKShapeNode(rect: self.frame)
         fade.fillColor = SKColor.whiteColor()
@@ -134,7 +148,7 @@ class CodeNamesGameScene: SKScene {
                 
                 let word = SKLabelNode(text: currentwords[buttonNumber])
                 word.fontColor = SKColor.blackColor()
-                word.fontSize = word.text!.characters.count > 10 ? 22 : 24
+                word.fontSize = word.text!.characters.count > 10 ? 18 : 24
                 word.fontName = "ArialHebrew-Bold"
                 word.position = CGPointMake(button.position.x + buttonSize.width/2.0, button.position.y + buttonSize.height/3)
                 word.name = nil
@@ -187,27 +201,6 @@ class CodeNamesGameScene: SKScene {
         }else{
             return neutralcolor
         }
-    }
-    
-    func animateTileSelect(tile: Button){
-        
-        var anim = [SKAction]()
-        for i in 1...5 { anim.append(SKAction.scaleXTo(sin(CGFloat(i)), duration: 0.2)) }
-        
-        if tile.respondsToSelector(tile.colortype == .red ? "setRedColor" : "setBlueColor") {
-            anim.append(SKAction.performSelector(tile.colortype == .red ? "setRedColor" : "setBlueColor", onTarget: tile))
-        }else{
-            print("selector failed")
-        }
-        
-        let animreverse = anim.reverse()
-
-        for i in animreverse {
-            anim.append(i)
-        }
-        
-        tile.runAction(SKAction.sequence(anim))
-        print("5")
     }
     
     func newGame() {
@@ -270,17 +263,6 @@ class CodeNamesGameScene: SKScene {
         
         tile.selected = true
         
-//        let selectionTile = SKShapeNode(rect: CGRectMake(-frame.width/10.0,-boardHeight/10.0, frame.width/5.0, boardHeight/5.0))
-//        selectionTile.fillColor = SKColor.greenColor()
-//        selectionTile.zPosition = 3
-//        selectionTile.zRotation = 12
-//        root.addChild(selectionTile)
-        
-//        let buttonMovementAction = SKAction.moveTo(CGPointMake(tile.position.x + frame.width/10.0, tile.position.y + boardHeight/10.0), duration: 0.3)
-//        let buttonRotationAction = SKAction.rotateToAngle(0.0, duration: 0.3)
-//        selectionTile.runAction(buttonMovementAction)
-//        selectionTile.runAction(buttonRotationAction)
-        
         animateTileSelect(tile)
         
         switch tile.colortype {
@@ -307,12 +289,14 @@ class CodeNamesGameScene: SKScene {
             print("red point")
             redWordsRemaining--
             if(redWordsRemaining == 0){gameOver(.red)}
+            return
         }
         
         if(tile.team == currentTurn && currentTurn == .blue){
             print("blue point")
             blueWordsRemaining--
             if(blueWordsRemaining == 0){gameOver(.blue)}
+            return
         }
         
         endTurn()
@@ -320,15 +304,52 @@ class CodeNamesGameScene: SKScene {
     
     func gameOver(winner: tiletype) {
         gameIsOver = true
-        print("game over! Winner: \(winner == .red ? "red!" : "blue!")")
+        currentTurnTopBarLabel.text = winner == .red ? "RED WINS!" : "BLUE WINS!"
     }
     
     func endTurn() {
         currentTurn = currentTurn == .red ? .blue : .red
+        currentTurnTopBarLabel.text = currentTurn == .red ? "Current turn: Red" : "Current turn: Blue"
         topBar.fillColor = currentTurn == .red ? redTeamColor : blueTeamColor
 
         //TODO: animate new turn
         //TODO: pause touches during animation
+    }
+    
+    func highlight(tile: Button) {
+
+    }
+    
+    func unhighlight(tile: Button) {
+        tile.removeAllActions()
+        updateColorFor(tile)
+    }
+    
+    func animateTileSelect(tile: Button) {
+        if (tile.colortype == .red){
+            tile.setColorRed()
+        }else{
+            tile.setColorBlue()
+        }
+    }
+    
+    func animateTileSelect_NOT_IN_USE_(tile: Button){
+        
+        var anim = [SKAction]()
+        
+        if tile.respondsToSelector(tile.colortype == .red ? "setRedColor" : "setBlueColor") {
+            anim.append(SKAction.performSelector(tile.colortype == .red ? "setRedColor" : "setBlueColor", onTarget: tile))
+        }else{
+            print("selector failed")
+        }
+        
+        let animreverse = anim.reverse()
+        
+        for i in animreverse {
+            anim.append(i)
+        }
+        
+        tile.runAction(SKAction.sequence(anim))
     }
     
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
@@ -350,26 +371,27 @@ class CodeNamesGameScene: SKScene {
             print(node.name)
             
             switch node.name! as String {
-                case "reveal":
-                    if(gameIsOver == true){
-                        return
-                    }
-                    if(teamView){
-                        disableTeamView()
-                    }else if (lockViewButton == false){
-                        lockViewButton = true
-                        revealpressed = true
-                        _ = NSTimer.scheduledTimerWithTimeInterval(2.0, target: self, selector: "enableTeamView", userInfo: nil, repeats: false)
-                        teamToggle.runAction(SKAction.sequence([SKAction.fadeAlphaTo(0.0, duration: 2.0), SKAction.fadeAlphaTo(1.0, duration: 0.2)]))
-                    }
+            case "reveal":
+                if(gameIsOver == true){
                     return
-                case "new game":
-                    newGame()
-                case "word tile":
-                    if(gameIsOver == true){
-                        return
-                    }
-                    tileSelect(node as! Button)
+                }
+                if(teamView){
+                    disableTeamView()
+                }else if (lockViewButton == false){
+                    lockViewButton = true
+                    revealpressed = true
+                    _ = NSTimer.scheduledTimerWithTimeInterval(2.0, target: self, selector: "enableTeamView", userInfo: nil, repeats: false)
+                    teamToggle.runAction(SKAction.sequence([SKAction.fadeAlphaTo(0.0, duration: 2.0), SKAction.fadeAlphaTo(1.0, duration: 0.2)]))
+                }
+                return
+            case "new game":
+                newGame()
+            case "word tile":
+                if(gameIsOver == true){
+                    return
+                }
+                tileSelect(node as! Button)
+                return
             default:
                 continue
             }
